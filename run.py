@@ -42,10 +42,10 @@ def main():
 
 def test(concurrent):
     ip_set = read_ip_set()
-    KMaxTest = 5000
+    KMaxTest = 50000
     KStartIndex = 1000
     out_put = []
-    ip_set = ip_set[KStartIndex:KStartIndex + KMaxTest]
+    #ip_set = ip_set[KStartIndex:KStartIndex + KMaxTest]
 
     print ctime()
     concurrency = ConcurrencyBaiduQuery(my_key_set[0], ip_set, concurrent, out_put)
@@ -62,8 +62,7 @@ def test(concurrent):
 KDefaultConcurrent = 4
 if __name__ == "__main__":
     concurrent = KDefaultConcurrent
-    if len(sys.argv) == 2 and isinstance(sys.argv[1], int):
-        concurrent = sys.argv[1]
-        pass
+    if len(sys.argv) == 2:
+        concurrent = int(sys.argv[1])
     print "concurrent num:", concurrent
     test(concurrent)

@@ -1,8 +1,8 @@
-from baidu_query import BaiduQuery
 import gevent
 from time import ctime
 from gevent import monkey
 monkey.patch_all()
+from baidu_query import BaiduQuery
 
 class ConcurrencyBaiduQuery:
 
@@ -28,9 +28,10 @@ class ConcurrencyBaiduQuery:
 			end_index = self.max_index_
 			pass
 		cnt = 0
+		baidu_query = BaiduQuery(self.key_)
 		for i in xrange(start_index, end_index):
-			baidu_query = BaiduQuery(self.key_, self.ip_set_[i])
-			self.out_put_.append(baidu_query.get_addr())
+			current_ip = self.ip_set_[i]
+			self.out_put_.append((current_ip, baidu_query.get_addr(self.ip_set_[i])))
 			cnt += 1
 			if cnt % 1000 == 0:
 				print "index:", index, ",sub index:", cnt, ctime()
