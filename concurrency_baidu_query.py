@@ -17,7 +17,6 @@ class ConcurrencyBaiduQuery:
         pass
 
     def query(self):
-        print "ip num for query:", self.max_index_
         jobs = [gevent.spawn(self.do_query, i) for i in xrange(self.num_)]
         gevent.wait(jobs)
         pass
@@ -25,7 +24,7 @@ class ConcurrencyBaiduQuery:
     def do_query(self, index):
         start_index = index * self.bucket_len_
         end_index = start_index + self.bucket_len_
-        ## deal with divide remain
+        # deal with divide remain
         if end_index >= self.max_index_:
             end_index = self.max_index_
             pass
@@ -41,5 +40,5 @@ class ConcurrencyBaiduQuery:
                 print "index:", index, ",sub index:", cnt, ctime()
                 pass
             pass
-        self.out_put_.append([index, tmp_result])
+        self.out_put_[index] = tmp_result
         pass

@@ -46,19 +46,16 @@ def test(concurrent):
     print "ip num:", len(ip_set)
     KMaxTest = 53
     KStartIndex = 0
-    out_put = []
-    #ip_set = ip_set[KStartIndex:KStartIndex + KMaxTest]
+    out_put = [0] * concurrent
+    ip_set = ip_set[KStartIndex:KStartIndex + KMaxTest]
 
     concurrency = ConcurrencyBaiduQuery(my_key_set[1], ip_set, concurrent, out_put)
     concurrency.query()
 
-    # sort with original index
-    sorted(out_put, key = lambda x : x[0])
     with codecs.open(crawler_name, "wb", "utf-8") as out_stream:
         for bucket_list in out_put:
-            for sub_list in bucket_list[1:]:
-                for tup in sub_list:
-                    out_stream.write(u" ".join(tup) + "\n")
+            for tup in bucket_list:
+                out_stream.write(u" ".join(tup) + "\n")
         pass
     pass
 
