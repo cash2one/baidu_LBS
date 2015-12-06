@@ -3,7 +3,7 @@ import os
 import sys
 import pdb
 import codecs
-from time import ctime
+import time
 from baidu_query import BaiduQuery
 from concurrency_baidu_query import ConcurrencyBaiduQuery
 
@@ -42,27 +42,41 @@ def main():
 
 def test(concurrent):
     ip_set = read_ip_set()
-    KMaxTest = 50000
-    KStartIndex = 1000
+    print "concurrent num:", concurrent
+    print "ip num:", len(ip_set)
+    KMaxTest = 53
+    KStartIndex = 0
     out_put = []
     #ip_set = ip_set[KStartIndex:KStartIndex + KMaxTest]
 
-    print ctime()
-    concurrency = ConcurrencyBaiduQuery(my_key_set[0], ip_set, concurrent, out_put)
+    concurrency = ConcurrencyBaiduQuery(my_key_set[1], ip_set, concurrent, out_put)
     concurrency.query()
-    print ctime()
 
+    # sort with original index
+    sorted(out_put, key = lambda x : x[0])
     with codecs.open(crawler_name, "wb", "utf-8") as out_stream:
-        for tup in out_put:
-            out_stream.write(u" ".join(tup) + "\n")
-        #out_stream.writelines([(u" ".join(tup) + u"\n") for tup in out_put])
+        for bucket_list in out_put:
+            for sub_list in bucket_list[1:]:
+                for tup in sub_list:
+                    out_stream.write(u" ".join(tup) + "\n")
         pass
-    print ctime()
+    pass
+
+def format_seconds(sec):
+    if sec < 60:
+        return "%d seconds" % sec
+    else:
+        return "%d minutes %d seconds" % (sec / 60, sec % 60)
+
+def run_with_timer(test, concurrent):
+    start_time = time.time()
+    test(concurrent)
+    end_time = time.time()
+    print "time cost:", format_seconds(end_time - start_time)
 
 KDefaultConcurrent = 4
 if __name__ == "__main__":
     concurrent = KDefaultConcurrent
     if len(sys.argv) == 2:
         concurrent = int(sys.argv[1])
-    print "concurrent num:", concurrent
-    test(concurrent)
+    run_with_timer(test, concurrent)
