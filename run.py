@@ -42,12 +42,13 @@ def main():
 
 def test(concurrent):
     ip_set = read_ip_set()
-    print "concurrent num:", concurrent
-    print "ip num:", len(ip_set)
-    KMaxTest = 53
+    KMaxTest = 10000
     KStartIndex = 0
     out_put = [0] * concurrent
     ip_set = ip_set[KStartIndex:KStartIndex + KMaxTest]
+
+    print "ip num:", len(ip_set)
+    print "concurrent num:", concurrent
 
     concurrency = ConcurrencyBaiduQuery(my_key_set[1], ip_set, concurrent, out_put)
     concurrency.query()
