@@ -12,8 +12,8 @@ class BaiduQuery:
         self.session_ = requests.Session()
 
     def get_addr(self, ip_str):
-        get_result = self.session_.get(self.build_url(ip_str))
         try:
+            get_result = self.session_.get(self.build_url(ip_str), timeout=2)
             json_data = json.loads(get_result.text)
             return json_data[self.JSON_KEY_EXTRACT]
         except:
