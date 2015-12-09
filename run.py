@@ -4,8 +4,8 @@ import sys
 import pdb
 import codecs
 import time
-from baidu_query import BaiduQuery
-from concurrency_baidu_query import ConcurrencyBaiduQuery
+import multiprocessing
+from process_based_query import process_based_query
 
 dict_name = "../qqwry-daemon/out.txt"
 crawler_name = "baidu_res.txt"
@@ -16,11 +16,13 @@ my_key_set = [
     "CbBRkw8K9Yv1g8c0Gr8qaIGa"
 ]
 
+
 def read_ip_set():
     ip_set = []
     with open(dict_name, "r") as input_stream:
         ip_set.extend([line.split(' ')[0] for line in input_stream])
     return ip_set
+
 
 def main():
     write_buffer = []
@@ -33,32 +35,40 @@ def main():
             write_buffer.append(u" ".join(query.get_addr()) + "\n")
             index += 1
             if index % 100 == 0:
-                print "current index:" ,index
+                print "current index:", index
         with open(crawler_name, "wb") as out_stream:
             out_stream.writelines(write_buffer)
             pass
         pass
     pass
 
-def test(concurrent):
+
+def test(concurrent_coroutines, test_len=0):
     ip_set = read_ip_set()
-    KMaxTest = 10000
+    KMaxTest = 80000
     KStartIndex = 0
-    out_put = [0] * concurrent
-    ip_set = ip_set[KStartIndex:KStartIndex + KMaxTest]
+    out_put = []
+    if test_len:
+        ip_set = ip_set[KStartIndex:KStartIndex + test_len]
 
     print "ip num:", len(ip_set)
-    print "concurrent num:", concurrent
+    print "concurrent coroutines num:", concurrent_coroutines
 
-    concurrency = ConcurrencyBaiduQuery(my_key_set[1], ip_set, concurrent, out_put)
-    concurrency.query()
+    process_based_query(my_key_set[0],
+                        concurrent_coroutines,
+                        ip_set,
+                        out_put)
+    print "query done, now sorting"
+    sorted(out_put, key=lambda x: x[0])
 
     with codecs.open(crawler_name, "wb", "utf-8") as out_stream:
         for bucket_list in out_put:
-            for tup in bucket_list:
-                out_stream.write(u" ".join(tup) + "\n")
+            for sub_list in bucket_list[1:]:
+                for tup in sub_list:
+                    out_stream.write(u" ".join(tup) + "\n")
         pass
     pass
+
 
 def format_seconds(sec):
     if sec < 60:
@@ -66,15 +76,19 @@ def format_seconds(sec):
     else:
         return "%d minutes %d seconds" % (sec / 60, sec % 60)
 
-def run_with_timer(test, concurrent):
+
+def run_with_timer(test, concurrent, test_set_len):
     start_time = time.time()
-    test(concurrent)
+    test(concurrent, test_set_len)
     end_time = time.time()
     print "time cost:", format_seconds(end_time - start_time)
 
-KDefaultConcurrent = 4
+KDefaultConcurrent = 30
 if __name__ == "__main__":
     concurrent = KDefaultConcurrent
-    if len(sys.argv) == 2:
+    test_set_len = 0
+    if len(sys.argv) >= 2:
         concurrent = int(sys.argv[1])
-    run_with_timer(test, concurrent)
+    if len(sys.argv) == 3:
+        test_set_len = int(sys.argv[2])
+    run_with_timer(test, concurrent, test_set_len)
